@@ -1,0 +1,410 @@
+import Enrollment from "../models/Enrollment.js"
+import Task from "../models/Task.js"
+import { isValidObjectId } from "mongoose";
+import User from "../models/User.js";
+import Payment from '../models/Payment.js'
+import Review from "../models/Review.js";
+import { analyzeComment } from "../utils/moderateReview.js";
+
+export const getMyProgram = async (req, res) => {
+  try {
+    const enrollement = await Enrollment.find({
+      intern: req.user._id
+    }).populate({
+      path: "program",
+      select: "title domain description type price durationInWeeks startDate endDate"
+    }).populate({
+      path: "mentor",
+      select: "name email"
+    })
+    const validEnrollments = enrollement.filter(
+      (e) => e.program !== null
+    );
+
+    res.status(200).json({
+      success: true,
+      enrollement: validEnrollments
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+
+export const startInternship = async (req, res) => {
+  try {
+    const { enrollmentId } = req.body
+    // Find enrollment
+    const enrollment = await Enrollment.findOne({
+      _id: enrollmentId,
+      intern: req.user._id
+    }).populate("program")
+
+    if (!enrollment) {
+      return res.status(404).json({
+        success: false,
+        message: "Enrollment not found"
+      })
+    }
+
+    // Check current status
+    if (enrollment.status !== "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Internship cannot be started"
+      })
+    }
+
+    // If program is paid → check payment
+    if (
+      enrollment.program.type === "paid" &&
+      enrollment.paymentStatus !== "paid"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment required before starting internship"
+      })
+    }
+
+    // Update status
+    enrollment.status = "in_progress"
+    await enrollment.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Internship started successfully",
+      enrollment
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+
+// Get Intern Task
+export const getMyTask = async (req, res) => {
+  try {
+    const internId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+    const status = req.query.status;
+
+    let filter = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    if (req.user.role !== "intern") {
+      return res.status(403).json({
+        success: false,
+        message: "Only interns can access tasks",
+      });
+    }
+
+    const intern = await User.findById(internId);
+
+    if (!intern) {
+      return res.status(404).json({
+        success: false,
+        message: "Intern not found",
+      });
+    }
+
+    if (!intern.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Intern is not activated yet",
+      });
+    }
+
+    // 🔐 find programs where intern is enrolled
+    const enrollments = await Enrollment.find({
+      intern: internId,
+      status: { $in: ["approved", "in_progress", "completed"] },
+    }).select("program");
+
+    const programIds = enrollments.map((e) => e.program);
+
+    // Build query object
+    const query = {
+      assignedIntern: internId,
+      program: { $in: programIds },
+      ...filter,
+    };
+
+    const tasks = await Task.find(query)
+      .populate("program", "title domain")
+      .populate("mentor", "name email")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Task.countDocuments(query);
+
+    return res.status(200).json({
+      success: true,
+      message: tasks.length > 0 ? "Tasks fetched successfully" : "No tasks found",
+      tasks,
+      totalPages: Math.ceil(total / limit),
+      total,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching tasks",
+    });
+  }
+};
+
+// Submit task
+export const submitTask = async (req, res) => {
+  try {
+    const internId = req.user.id;
+    const { taskId } = req.params;
+    const { submissionText, submissionLink, submissionFile } = req.body;
+
+    if (!isValidObjectId(taskId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid task id"
+      });
+    }
+
+    if (!submissionText && !submissionLink && !submissionFile) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one submission field is required"
+      });
+    }
+
+    const task = await Task.findById(taskId);
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found"
+      });
+    }
+
+    // 🔐 ownership check
+    if (task.assignedIntern.toString() !== internId) {
+      return res.status(403).json({
+        success: false,
+        message: "Task not assigned to this intern"
+      });
+    }
+
+    // 🔐 program enrollment check
+    const enrollment = await Enrollment.findById(task.enrollment);
+
+    if (!enrollment || enrollment.status !== "in_progress") {
+      return res.status(403).json({
+        success: false,
+        message: "Internship not active"
+      });
+    }
+
+    if (task.status === "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Task already submitted"
+      });
+    }
+
+    // Late submission
+    if (new Date() > task.deadline) {
+      task.isLate = true;
+    }
+
+    task.submissionText = submissionText;
+    task.submissionLink = submissionLink;
+    task.submissionFile = submissionFile;
+    task.submittedAt = new Date();
+    task.attempts += 1;
+    task.status = "submitted";
+    task.reviewStatus = "pending";
+    task.score = undefined;          // ✅ REQUIRED
+    task.feedback = undefined;       // ✅ REQUIRED
+    task.reviewedAt = null;          // ✅ REQUIRED
+
+    await task.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Task submitted successfully"
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while submitting task"
+    });
+  }
+}
+export const getInternPaymentHistory = async (req, res) => {
+  try {
+    const payments = await Payment.find({
+      intern: req.user._id,
+      paymentStatus: "success"
+    })
+      .populate("program", "title")
+      .populate("company", "name")
+      .sort({ createdAt: -1 });
+
+    if (!payments.length) {
+      return res.status(200).json({
+        success: true,
+        summary: {
+          totalPaid: 0,
+          totalProgramsPurchased: 0,
+          lastPaymentDate: null
+        },
+        payments: []
+      });
+    }
+
+    const transactions = payments.map(payment => ({
+      paymentId: payment._id,
+      programTitle: payment.program?.title || "N/A",
+      companyName: payment.company?.name || "N/A",
+      amount: payment.totalAmount,
+      paymentMethod: payment.paymentMethod,
+      status: payment.paymentStatus,
+      transactionId: payment.transactionId,
+      createdAt: payment.createdAt
+    }));
+
+    const totalPaid = payments.reduce(
+      (sum, p) => sum + p.totalAmount,
+      0
+    );
+
+    const totalProgramsPurchased = payments.length;
+
+    const lastPaymentDate = payments[0].createdAt;
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        totalPaid,
+        totalProgramsPurchased,
+        lastPaymentDate
+      },
+      payments: transactions
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+}
+
+export const createReview = async (req, res) => {
+  try {
+
+    const { rating, comment } = req.body;
+
+    // Find completed enrollment of logged in intern
+    const enrollment = await Enrollment.findOne({
+      intern: req.user._id,
+      status: "completed"
+    }).populate("program");
+
+    if (!enrollment) {
+      return res.status(404).json({
+        message: "Completed enrollment not found"
+      });
+    }
+
+    // Prevent duplicate review
+    const existingReview = await Review.findOne({
+      enrollment: enrollment._id
+    });
+
+    if (existingReview) {
+      return res.status(400).json({
+        message: "Review already submitted"
+      });
+    }
+
+    // Comment moderation rule
+    let reviewStatus = "approved"
+    // const reviewStatus = comment ? "pending" : "approved";
+    if (comment) {
+
+      const scores = await analyzeComment(comment);
+
+      if (scores) {
+        const toxicity = scores.TOXICITY.summaryScore.value;
+        const insult = scores.INSULT.summaryScore.value;
+        const profanity = scores.PROFANITY.summaryScore.value;
+        const threat = scores.THREAT.summaryScore.value;
+        const identityAttack = scores.IDENTITY_ATTACK.summaryScore.value;
+        // If toxic comment detected
+        if (
+          toxicity > 0.7 ||
+          insult > 0.7 ||
+          profanity > 0.7 ||
+          threat > 0.6 ||
+          identityAttack > 0.7
+        ) {
+          reviewStatus = "pending";
+        }
+      }
+    }
+
+    await Review.create({
+      intern: req.user._id,
+      company: enrollment.program.company,
+      program: enrollment.program._id,
+      enrollment: enrollment._id,
+      rating,
+      comment,
+      status: reviewStatus
+    })
+
+    res.json({
+      success: true,
+      message:
+        reviewStatus === "approved"
+          ? "Review submitted successfully"
+          : "Your review is under admin review due to language check"
+    })
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+}
+
+export const getMyReview = async (req, res) => {
+  try {
+    const review = await Review.findOne({
+      company: req.user.company,
+      intern: req.user.id
+    })
+      .populate("intern", "name")
+      .populate("program", "title")
+      .sort({ createdAt: -1 })
+
+    res.json({
+      success: true,
+      review
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    })
+  }
+}

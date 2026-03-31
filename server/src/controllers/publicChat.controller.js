@@ -8,7 +8,7 @@ export const publicChatHandler = async (req, res) => {
     const { message } = req.body;
 
     // 🔥 Fetch REAL DATA
-    const programs = await InternshipProgram.find({ status: "active" })
+    const programs = await InternshipProgram.find()
       .populate("company", "name")
       .limit(5);
 
@@ -32,3 +32,5 @@ export const publicChatHandler = async (req, res) => {
     res.status(500).json({ error: "Something went wrong" });
   }
 };
+
+

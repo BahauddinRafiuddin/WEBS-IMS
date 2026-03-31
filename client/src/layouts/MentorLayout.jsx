@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
 import { useState } from "react";
 import Topbar from "../components/common/Topbar";
+import AIChat from "../components/common/AIChat";
 const MentorLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -37,6 +38,8 @@ const MentorLayout = () => {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />
         </main>
+
+        <AIChat type="private"/>
       </div>
     </div>
   );

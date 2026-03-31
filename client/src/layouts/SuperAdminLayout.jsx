@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/common/Sidebar";
 import Topbar from "../components/common/Topbar";
+import AIChat from "../components/common/AIChat";
 
 const SuperAdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,6 +53,7 @@ const SuperAdminLayout = () => {
             </div>
           </div>
         </main>
+        <AIChat type="private"/>
       </div>
     </div>
   );

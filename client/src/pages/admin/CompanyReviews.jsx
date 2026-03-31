@@ -166,7 +166,7 @@ const CompanyReviews = () => {
                     <p className="text-slate-600 text-sm leading-relaxed italic relative z-10">
                       "
                       {review.comment ||
-                        "The intern did not provide a written comment."}
+                        ""}
                       "
                     </p>
                   </div>

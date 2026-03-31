@@ -109,7 +109,7 @@ const Landing = () => {
       </section>
 
       {/* ================= AI CHAT INTERFACE ================= */}
-      {!user && <AIChat />}
+      {!user && <AIChat type="public"/>}
     </div>
   );
 };

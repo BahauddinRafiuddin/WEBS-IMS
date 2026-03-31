@@ -13,6 +13,7 @@ import mentorRouter from './routes/mentorRoutes.js'
 import superAdminRouter from './routes/superAdminRoutes.js'
 import userRouter from './routes/userRoutes.js'
 import publicChatRouter from './routes/publicChat.routes.js'
+import privateChatRouter from './routes/privateChat.routes.js'
 
 const app = express()
 app.use(cors({
@@ -35,7 +36,7 @@ app.use('/api/mentor', mentorRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/payment', paymentRouter)
 app.use('/api/public-chat',publicChatRouter)
-
+app.use('/api/private-chat',privateChatRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/performance', performanceRouter)
 app.use('/api/certificate', certificateRouter)

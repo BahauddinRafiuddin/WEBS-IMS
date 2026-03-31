@@ -2,8 +2,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Sparkles, Send, Loader2 } from "lucide-react";
 import { publicChatHandler } from "../../api/publicChat-bot.api"; // Adjust this path to your api file
+import { privateChatHandler } from "../../api/privateChat.api";
 
-const AIChat = () => {
+const AIChat = ({ type = "public" }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,17 @@ const AIChat = () => {
     }
   }, [messages, loading]);
 
+  useEffect(() => {
+  if (type === "private") {
+    setMessages([
+      {
+        role: "ai",
+        content: "Hi! I'm your Dashboard Assistant. I am here to help you."
+      }
+    ]);
+  }
+}, [type]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
@@ -37,7 +49,10 @@ const AIChat = () => {
     try {
       // 2. Call your API handler
       // Sending { message: userMessage } based on standard POST patterns
-      const data = await publicChatHandler({ message: userMessage });
+      const data =
+        type === "private"
+          ? await privateChatHandler({ message: userMessage })
+          : await publicChatHandler({ message: userMessage });
 
       // 3. Add AI reply to UI
       setMessages((prev) => [...prev, { role: "ai", content: data.reply }]);

@@ -2,7 +2,6 @@ import mongoose, { isValidObjectId } from "mongoose";
 import User from "../models/User.js";
 import InternshipProgram from "../models/InternshipProgram.js";
 import razorpay from "../utils/razorpay.js";
-import crypto from "crypto"
 import { sendEmail } from "../utils/sendEmail.js"
 import Enrollment from "../models/Enrollment.js";
 import Payment from "../models/Payment.js";
@@ -10,6 +9,7 @@ import CompanyWallet from "../models/CompanyWallet.js";
 import { generateTempPassword } from "../utils/generatePassword.js";
 import Review from "../models/Review.js";
 import { exportToFile } from "../utils/export.util.js";
+import { invalidatePublicCache } from "../utils/publicDataCache.js";
 
 
 export const getAdminDashboard = async (req, res) => {
@@ -232,7 +232,9 @@ export const getAllMentors = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-};
+}
+
+// get comapny review
 export const getCompanyReviews = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -271,6 +273,7 @@ export const getCompanyReviews = async (req, res) => {
     })
   }
 }
+
 // EXPORT MENTORS (Using your helper file)
 export const exportMentors = async (req, res) => {
   try {
@@ -317,6 +320,8 @@ export const exportMentors = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
+// Delete mentor
 export const deleteMentorById = async (req, res) => {
   try {
     const { mentorId } = req.params;
@@ -363,8 +368,9 @@ export const deleteMentorById = async (req, res) => {
       message: "Server error while deleting mentor"
     });
   }
-};
+}
 
+// Toggle status of intern
 export const updateInternStatus = async (req, res) => {
   try {
     const { internId } = req.params
@@ -439,6 +445,8 @@ export const createProgram = async (req, res) => {
       endDate,
       company: req.user.company
     })
+    // Clearing cache to ensure data remain updated.
+    invalidatePublicCache()
 
     return res.status(201).json({
       success: true, message: "Program SuccessFully Created", program: {
@@ -458,6 +466,7 @@ export const createProgram = async (req, res) => {
   }
 }
 
+// get all programs of company
 export const getAllPrograms = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -745,6 +754,7 @@ export const updateProgram = async (req, res) => {
   }
 }
 
+// get all available intern
 export const getAvailableInterns = async (req, res) => {
   try {
     const companyId = req.user.company;
@@ -794,7 +804,7 @@ export const getAvailableInterns = async (req, res) => {
 };
 
 
-
+// Mentor creation
 export const createMentor = async (req, res) => {
   try {
     const { name, email } = req.body
@@ -839,6 +849,7 @@ export const createMentor = async (req, res) => {
   }
 }
 
+// Intern creation
 export const createIntern = async (req, res) => {
   try {
     const { name, email } = req.body
@@ -882,6 +893,7 @@ export const createIntern = async (req, res) => {
   }
 }
 
+// refund payment currently not available for future
 export const refundPayment = async (req, res) => {
   try {
     const { enrollmentId } = req.body;
@@ -1006,6 +1018,7 @@ export const refundPayment = async (req, res) => {
   }
 }
 
+// Finance overview of admin finanace
 export const getAdminFinanceOverview = async (req, res) => {
   try {
     const { commission, startDate, endDate, page = 1, limit = 2 } = req.query
@@ -1079,6 +1092,7 @@ export const getAdminFinanceOverview = async (req, res) => {
   }
 }
 
+// Export finance Report
 export const exportFinanceReport = async (req, res) => {
   try {
     const { commission, startDate, endDate, format = "excel" } = req.query;
@@ -1133,8 +1147,9 @@ export const exportFinanceReport = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-};
+}
 
+// review export
 export const exportCompanyReviews = async (req, res) => {
   try {
     const { rating, format = "excel" } = req.query;
@@ -1178,4 +1193,4 @@ export const exportCompanyReviews = async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-};
+}

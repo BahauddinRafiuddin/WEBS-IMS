@@ -21,6 +21,7 @@ export const buildPublicPrompt = ({ programs, companies }) => {
 
   ### KNOWLEDGE BASE
   **Available Companies:**
+  ** Here Price is about what intern has to pay to join program* no stipend as of now*
   ${companyList}
 
   **Available Internship Programs:**

@@ -3,51 +3,8 @@ import Company from '../models/Company.js'
 import { sendEmail } from "../utils/sendEmail.js"
 import { generateTempPassword } from '../utils/generatePassword.js';
 import CommissionHistory from '../models/CommissionHistory.js';
+import { invalidatePublicCache } from '../utils/publicDataCache.js';
 
-// export const createCompany = async (req, res) => {
-//   try {
-//     const { name, email, phone, address, adminName, adminEmail, adminPassword } = req.body;
-
-
-//     // Check if company already exists
-//     const existingCompany = await Company.findOne({ name });
-//     if (existingCompany) {
-//       return res.status(400).json({ message: "Company already exists" });
-//     }
-
-//     // Create company
-//     const company = await Company.create({
-//       name,
-//       email,
-//       phone,
-//       address
-//     });
-
-//     // Create Admin for that company
-//     const admin = await User.create({
-//       name: adminName,
-//       email: adminEmail,
-//       password: adminPassword,
-//       role: "admin",
-//       company: company._id,
-//       isActive: true
-//     });
-
-//     return res.status(201).json({
-//       success: true,
-//       message: "Company and Admin created successfully",
-//       company,
-//       admin
-//     });
-
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server error while adding company "
-//     })
-//   }
-// }
 
 export const createCompany = async (req, res) => {
   try {
@@ -97,6 +54,8 @@ export const createCompany = async (req, res) => {
       address,
       commissionPercentage
     })
+    // Clearing Cache to main data remain updated
+    invalidatePublicCache()
 
     // Create Comission History
     await CommissionHistory.create({

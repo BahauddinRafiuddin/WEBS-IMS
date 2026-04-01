@@ -54,14 +54,17 @@ const Interns = () => {
     fetchData();
   }, [page, search]);
 
-  const handleExport = async (format) => { 
+  const handleExport = async (format) => {
     if (interns.length === 0) {
-    return toastError("No data available to export");
-  }
+      return toastError("No data available to export");
+    }
+    setLoading(true);
     try {
-      await exportInternsApi(search, format)
+      await exportInternsApi(search, format);
     } catch (error) {
       toastError("Export failed");
+    } finally {
+      setLoading(false);
     }
   };
   const handleStatusToggle = async (id, status) => {
@@ -162,6 +165,7 @@ const Interns = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleExport("excel")}
+              disabled={loading}
               className="flex items-center gap-2 bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
               title="Download Excel"
             >
@@ -171,6 +175,7 @@ const Interns = () => {
 
             <button
               onClick={() => handleExport("pdf")}
+              disabled={loading}
               className="flex items-center gap-2 bg-white border border-slate-200 hover:border-rose-200 hover:bg-rose-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
               title="Download PDF"
             >

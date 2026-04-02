@@ -11,7 +11,10 @@ export const privateChatController = async (req, res) => {
 
     // Step 1: Classify intent (cheap — 10 tokens, no data)
     const intent = await classifyIntent(message, role)
-
+    if (intent === "codding" || intent === "programming") {
+      const reply = "I apologize, but I am specialized only in assisting with our internship platform. I cannot provide coding assistance or programming"
+      return res.json({ reply, intent })
+    }
     // Step 2: Fetch ONLY the relevant data
     const fetcher = fetchers[intent] || fetchers.general
     const contextData = await fetcher({ userId, companyId, role })

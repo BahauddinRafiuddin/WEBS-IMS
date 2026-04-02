@@ -1,10 +1,10 @@
 import { askGroq } from "../services/groq.service.js";
 
 const INTENT_MAP = {
-  intern: ["profile_details","tasks", "programs", "performance", "certificate", "general"],
-  mentor: ["profile_details","tasks", "interns", "programs", "performance", "general"],
-  admin: ["profile_details","interns", "mentors", "companies","programs", "finance", "general", "interns_mentors"],
-  super_admin: ["profile_details","companies", "general","finance"],
+  intern: ["profile_details", "tasks", "programs", "performance", "certificate", "general","codding","programming"],
+  mentor: ["profile_details", "tasks", "interns", "programs", "performance", "general","codding","programming"],
+  admin: ["profile_details", "interns", "mentors", "companies", "programs", "finance", "general", "interns_mentors", "commission","codding","programming"],
+  super_admin: ["profile_details", "companies", "general", "finance", "commission","codding","programming"],
 };
 
 export const classifyIntent = async (message, role) => {

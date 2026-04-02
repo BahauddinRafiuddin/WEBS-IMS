@@ -65,11 +65,17 @@ const AdminFinance = () => {
   };
 
   const handleExport = async (format) => {
+    if (data.length === 0) {
+      return toastError("No data to export");
+    }
+    setLoading(true);
     try {
       await exportFinanceApi(filters, format);
     } catch (err) {
       console.error("Export failed", err);
       toastError("Failed to export report");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +99,7 @@ const AdminFinance = () => {
         </div>
         <button
           onClick={() => handleExport("excel")}
+          disabled={loading}
           className="flex items-center justify-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
         >
           <Download size={18} className="text-indigo-600" />

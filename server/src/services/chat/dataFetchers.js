@@ -1,3 +1,4 @@
+import CommissionHistory from '../../models/CommissionHistory.js';
 import Company from '../../models/Company.js';
 import Enrollment from '../../models/Enrollment.js';
 import InternshipProgram from '../../models/InternshipProgram.js';
@@ -23,9 +24,14 @@ export const fetchers = {
           .select("name email")
           .populate("company", "name email").lean()
       case 'super_admin':
-        return User.findById(userId)
+        const user = await User.findById(userId)
           .select("name email")
           .populate("company", "name email").lean()
+
+        return {
+          userData: user,
+          "role": "can add comapnies to this platform , not associated with any company because he is the owner of the platform"
+        }
     }
   },
 
@@ -85,19 +91,24 @@ export const fetchers = {
       .select("name email isActive -_id")
       .lean();
   },
+
   companies: async ({ companyId, role }) => {
     switch (role) {
       case 'admin':
-        return Company.findById(companyId).select("name email phone isActive -_id").lean();
+        return Company.findById(companyId).select("name email phone isActive commissionPercentage -_id").lean();
       case 'super_admin':
-        return Company.find().select("name email phone isActive -_id").lean();
+        return Company.find().select("name email phone isActive commissionPercentage -_id").lean();
     }
   },
 
   finance: async ({ companyId, role }) => {
     switch (role) {
       case 'admin': {
-        const paymentData = await Payment.find({ company: companyId, paymentStatus: "success" })
+        let filter = {
+          company: companyId,
+          paymentStatus: "success"
+        }
+        const paymentData = await Payment.find(filter)
           .select("-_id")
           .populate("intern", "name email")
           .populate("program", "title price")
@@ -107,13 +118,16 @@ export const fetchers = {
         const totalRevenue = paymentData.reduce((sum, p) => sum + p.totalAmount, 0);
         const totalCommission = paymentData.reduce((sum, p) => sum + p.superAdminCommission, 0);
         const totalCompanyEarning = paymentData.reduce((sum, p) => sum + p.companyEarning, 0);
+
+
+
+
         return {
           summary: {
             totalRevenue,
             totalCommission,
-            totalCompanyEarning,
+            "totalCompanyEarning₹":totalCompanyEarning,
             totalTransactions,
-            currency: "₹"
           },
         }
       }
@@ -137,6 +151,75 @@ export const fetchers = {
             currency: "₹"
           },
         }
+      }
+    }
+  },
+
+  commission: async ({ companyId, role }) => {
+    switch (role) {
+      case 'admin': {
+        let filter = {
+          company: companyId,
+          paymentStatus: "success"
+        }
+        const commissionHistory = await CommissionHistory.find({ company: companyId }).lean()
+        const commissionPercentage = await Company.findById(companyId).select("commissionPercentage").lean()
+        const breakdown = await Payment.aggregate([
+          { $match: filter },
+          {
+            $group: {
+              _id: "$commissionPercentage",
+              totalRevenue: { $sum: "$totalAmount" },
+              totalCommission: { $sum: "$superAdminCommission" },
+              totalEarning: { $sum: "$companyEarning" },
+              totalTransactions: { $sum: 1 }
+            }
+          },
+          {
+            $project: {
+              commissionPercentage: "$_id",
+              totalRevenue: 1,
+              totalCommission: 1,
+              totalEarning: 1,
+              totalTransactions: 1,
+              _id: 0
+            }
+          }
+        ])
+        return {
+          summary: {
+            "Comapany Pay commsion to platform": "yes",
+            "commission That Platform Take for each transaction": commissionPercentage,
+            "commissionHistory": commissionHistory,
+            "commissionBreakDown₹": breakdown,
+
+          }
+        }
+      }
+      case 'super_admin': {
+        const history = await CommissionHistory.find()
+          .populate("company", "name")
+          .sort({ createdAt: -1 })
+
+        const data = history.map((item) => {
+
+          const start = new Date(item.startDate)
+          const end = item.endDate ? new Date(item.endDate) : new Date()
+
+          const durationDays = Math.ceil(
+            (end - start) / (1000 * 60 * 60 * 24)
+          )
+          return {
+            companyId: item.company._id,
+            companyName: item.company.name,
+            commissionPercentage: item.commissionPercentage,
+            startDate: item.startDate,
+            endDate: item.endDate,
+            durationDays
+          }
+        })
+
+        return data
       }
     }
   },

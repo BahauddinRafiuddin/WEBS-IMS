@@ -3,7 +3,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { getCompanyReviews, exportReviewsApi } from "../../api/admin.api";
 import { toastError } from "../../utils/toast";
-import { Star, MessageSquare, Quote, Calendar, Award ,Filter } from "lucide-react";
+import {
+  Star,
+  MessageSquare,
+  Quote,
+  Calendar,
+  Award,
+  Filter,
+} from "lucide-react";
 
 import Pagination from "../../components/common/Pagination";
 import Loading from "../../components/common/Loading";
@@ -54,8 +61,19 @@ const CompanyReviews = () => {
     ));
   };
 
-  const handleExport = (format) => {
-    exportReviewsApi(minRating, format);
+  const handleExport = async (format) => {
+    if (reviews.length === 0) {
+      return toastError("No data to export!");
+    }
+    setLoading(true);
+    try {
+      await exportReviewsApi(minRating, format);
+    } catch (error) {
+      console.error("Export failed", error);
+      toastError("Failed to export report");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) return <Loading />;
@@ -96,12 +114,14 @@ const CompanyReviews = () => {
           <div className="flex gap-2">
             <button
               onClick={() => handleExport("excel")}
+              disabled={loading}
               className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl text-sm font-bold border border-emerald-100 hover:bg-emerald-100 cursor-pointer transition-colors"
             >
               Export Excel
             </button>
             <button
               onClick={() => handleExport("pdf")}
+              disabled={loading}
               className="bg-rose-50 text-rose-700 px-4 py-2 rounded-xl text-sm font-bold border border-rose-100 hover:bg-rose-100 cursor-pointer transition-colors"
             >
               Export PDF
@@ -164,10 +184,7 @@ const CompanyReviews = () => {
                   {/* COMMENT BOX */}
                   <div className="relative">
                     <p className="text-slate-600 text-sm leading-relaxed italic relative z-10">
-                      "
-                      {review.comment ||
-                        ""}
-                      "
+                      "{review.comment || ""}"
                     </p>
                   </div>
 

@@ -1,7 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useEffect, useState, useMemo } from "react";
-import { getAllPrograms, changeProgramStatus ,exportProgramsApi} from "../../api/program.api";
+import {
+  getAllPrograms,
+  changeProgramStatus,
+  exportProgramsApi,
+} from "../../api/program.api";
 import {
   SearchX,
   Plus,
@@ -58,11 +62,17 @@ const Programs = () => {
   }, [page, search]);
 
   const handleExport = async (format) => {
+    if (programs.length === 0) {
+      return toastError("No data available to export");
+    }
+    setLoading(true);
     try {
       await exportProgramsApi(search, format);
       toastSuccess(`${format.toUpperCase()} exported successfully`);
     } catch (err) {
       toastError(err.message || "Export failed");
+    } finally {
+      setLoading(false);
     }
   };
   const handleStatusChange = async (program) => {
@@ -147,13 +157,15 @@ const Programs = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleExport("excel")}
-              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-emerald-50 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm"
+              disabled={loading}
+              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-emerald-50 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm cursor-pointer"
             >
               <Download size={16} className="text-emerald-600" /> Excel
             </button>
             <button
               onClick={() => handleExport("pdf")}
-              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-rose-50 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm"
+              disabled={loading}
+              className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-rose-50 px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm cursor-pointer"
             >
               <Download size={16} className="text-rose-600" /> PDF
             </button>

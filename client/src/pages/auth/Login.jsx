@@ -62,6 +62,7 @@ const Login = () => {
       if (role === "super_admin") navigate("/superadmin");
       else if (role === "admin") navigate("/admin");
       else if (role === "mentor") navigate("/mentor");
+      else if(role === "public_user") navigate("/public_user")
       else navigate("/intern");
     } catch (err) {
       toastError(err.response?.data?.message || "Login failed");
@@ -82,8 +83,8 @@ const Login = () => {
         className="relative z-10 bg-white/80 backdrop-blur-xl w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-2xl border border-slate-200/50"
       >
         {/* Close Button */}
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="absolute right-5 top-5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-2 rounded-full transition-colors"
         >
           <X size={20} />
@@ -92,7 +93,7 @@ const Login = () => {
         {/* Header */}
         <div className="text-center mb-8 mt-2">
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Welcome  <span className="inline-block animate-wave">👋</span>
+            Welcome <span className="inline-block animate-wave">👋</span>
           </h2>
           <p className="text-sm text-slate-500 mt-2">
             Please enter your details to sign in.
@@ -105,7 +106,10 @@ const Login = () => {
             Email Address
           </label>
           <div className="relative group">
-            <Mail className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={20} />
+            <Mail
+              className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors"
+              size={20}
+            />
             <input
               name="email"
               placeholder="name@company.com"
@@ -113,14 +117,17 @@ const Login = () => {
               value={form.email}
               onChange={handleChange}
               className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400
-                ${errors.email 
-                  ? "border-red-400 focus:ring-4 focus:ring-red-500/10 focus:border-red-500" 
-                  : "border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 hover:border-slate-300"
+                ${
+                  errors.email
+                    ? "border-red-400 focus:ring-4 focus:ring-red-500/10 focus:border-red-500"
+                    : "border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 hover:border-slate-300"
                 }`}
             />
           </div>
           {errors.email && (
-            <p className="text-red-500 font-medium text-xs mt-1.5 ml-1">{errors.email}</p>
+            <p className="text-red-500 font-medium text-xs mt-1.5 ml-1">
+              {errors.email}
+            </p>
           )}
         </div>
 
@@ -130,7 +137,10 @@ const Login = () => {
             Password
           </label>
           <div className="relative group">
-            <Lock className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" size={20} />
+            <Lock
+              className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors"
+              size={20}
+            />
             <input
               type={show ? "text" : "password"}
               name="password"
@@ -139,9 +149,10 @@ const Login = () => {
               minLength={8}
               onChange={handleChange}
               className={`w-full pl-11 pr-12 py-3 bg-white border rounded-xl text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400
-                ${errors.password 
-                  ? "border-red-400 focus:ring-4 focus:ring-red-500/10 focus:border-red-500" 
-                  : "border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 hover:border-slate-300"
+                ${
+                  errors.password
+                    ? "border-red-400 focus:ring-4 focus:ring-red-500/10 focus:border-red-500"
+                    : "border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 hover:border-slate-300"
                 }`}
             />
             <button
@@ -166,9 +177,25 @@ const Login = () => {
         >
           {loading ? (
             <span className="flex items-center gap-2">
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               Logging in...
             </span>
@@ -176,6 +203,12 @@ const Login = () => {
             "Login"
           )}
         </button>
+        <p className="text-sm text-center mt-4">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-indigo-600 font-medium">
+            Register
+          </Link>
+        </p>
       </form>
     </div>
   );

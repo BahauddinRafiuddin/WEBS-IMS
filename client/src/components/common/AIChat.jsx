@@ -1,8 +1,36 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect } from "react";
+import  { useState, useRef, useEffect } from "react";
 import { X, Sparkles, Send, Loader2 } from "lucide-react";
 import { publicChatHandler } from "../../api/publicChat-bot.api"; // Adjust this path to your api file
 import { privateChatHandler } from "../../api/privateChat.api";
+
+const renderMarkdown = (text) => {
+  if (!text) return "";
+  return text
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3 style="margin:4px 0 2px;font-size:13px;font-weight:600">$1</h3>')
+    .replace(/^## (.+)$/gm,  '<h2 style="margin:4px 0 2px;font-size:14px;font-weight:600">$1</h2>')
+    .replace(/^# (.+)$/gm,   '<h1 style="margin:4px 0 2px;font-size:15px;font-weight:700">$1</h1>')
+    // Bold italic combined
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.08);padding:1px 4px;border-radius:3px;font-size:11px;font-family:monospace">$1</code>')
+    // Numbered lists
+    .replace(/^\d+\.\s+(.+)$/gm, '<li style="margin-left:16px;list-style:decimal">$1</li>')
+    // Bullet lists
+    .replace(/^[-*]\s+(.+)$/gm, '<li style="margin-left:16px;list-style:disc">$1</li>')
+    // Wrap consecutive <li> items in <ul>
+    .replace(/(<li[^>]*>.+?<\/li>\n?)+/g, '<ul style="margin:4px 0;padding:0">$&</ul>')
+    // Paragraphs
+    .replace(/\n\n/g, '</p><p style="margin:6px 0">')
+    // Line breaks
+    .replace(/\n/g, '<br/>')
+    .trim();
+};
 
 const AIChat = ({ type = "public" }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -25,15 +53,15 @@ const AIChat = ({ type = "public" }) => {
   }, [messages, loading]);
 
   useEffect(() => {
-  if (type === "private") {
-    setMessages([
-      {
-        role: "ai",
-        content: "Hi! I'm your Dashboard Assistant. I am here to help you."
-      }
-    ]);
-  }
-}, [type]);
+    if (type === "private") {
+      setMessages([
+        {
+          role: "ai",
+          content: "Hi! I'm your Dashboard Assistant. I am here to help you.",
+        },
+      ]);
+    }
+  }, [type]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -48,7 +76,6 @@ const AIChat = ({ type = "public" }) => {
 
     try {
       // 2. Call your API handler
-      // Sending { message: userMessage } based on standard POST patterns
       const data =
         type === "private"
           ? await privateChatHandler({ message: userMessage })
@@ -106,7 +133,14 @@ const AIChat = ({ type = "public" }) => {
                       : "bg-white text-slate-700 border border-slate-200 rounded-tl-none"
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === "user" ? (
+                    msg.content
+                  ) : (
+                    <span
+                      className="prose-ai"
+                      dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }}
+                    />
+                  )}
                 </div>
               </div>
             ))}
@@ -149,14 +183,14 @@ const AIChat = ({ type = "public" }) => {
       <button
         onClick={() => setIsChatOpen(!isChatOpen)}
         className={`
-    flex items-center justify-center transition-all duration-300 shadow-2xl 
-    border-4 border-white cursor-pointer relative group active:scale-95
-    ${
-      isChatOpen
-        ? "w-14 h-14 rounded-full bg-white text-indigo-600 rotate-90"
-        : "px-6 h-14 rounded-full bg-indigo-600 text-white hover:scale-105"
-    }
-  `}
+          flex items-center justify-center transition-all duration-300 shadow-2xl 
+          border-4 border-white cursor-pointer relative group active:scale-95
+          ${
+            isChatOpen
+              ? "w-14 h-14 rounded-full bg-white text-indigo-600 rotate-90"
+              : "px-6 h-14 rounded-full bg-indigo-600 text-white hover:scale-105"
+          }
+        `}
       >
         <div className="flex items-center gap-2 whitespace-nowrap">
           {/* Text only shows when chat is closed */}

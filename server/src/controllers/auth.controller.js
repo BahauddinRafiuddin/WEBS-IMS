@@ -17,7 +17,11 @@ export const register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      role: "public_user",
+      company: null,
+      isActive: true,
+      forcePasswordChange: false  // they set their own password
     })
 
     return res.status(201).json({
@@ -84,8 +88,6 @@ export const login = async (req, res) => {
         token
       })
     }
-
-
   } catch (error) {
     console.log(error)
     res.status(500).json({

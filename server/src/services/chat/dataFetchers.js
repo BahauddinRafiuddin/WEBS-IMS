@@ -118,15 +118,11 @@ export const fetchers = {
         const totalRevenue = paymentData.reduce((sum, p) => sum + p.totalAmount, 0);
         const totalCommission = paymentData.reduce((sum, p) => sum + p.superAdminCommission, 0);
         const totalCompanyEarning = paymentData.reduce((sum, p) => sum + p.companyEarning, 0);
-
-
-
-
         return {
           summary: {
             totalRevenue,
             totalCommission,
-            "totalCompanyEarning₹":totalCompanyEarning,
+            "totalCompanyEarning₹": totalCompanyEarning,
             totalTransactions,
           },
         }
@@ -162,7 +158,7 @@ export const fetchers = {
           company: companyId,
           paymentStatus: "success"
         }
-        const commissionHistory = await CommissionHistory.find({ company: companyId }).lean()
+        const commissionHistory = await CommissionHistory.find({ company: companyId }).select("-_id").lean()
         const commissionPercentage = await Company.findById(companyId).select("commissionPercentage").lean()
         const breakdown = await Payment.aggregate([
           { $match: filter },
@@ -192,13 +188,14 @@ export const fetchers = {
             "commission That Platform Take for each transaction": commissionPercentage,
             "commissionHistory": commissionHistory,
             "commissionBreakDown₹": breakdown,
-
           }
         }
       }
       case 'super_admin': {
         const history = await CommissionHistory.find()
           .populate("company", "name")
+          .select("-_id")
+          .lean()
           .sort({ createdAt: -1 })
 
         const data = history.map((item) => {

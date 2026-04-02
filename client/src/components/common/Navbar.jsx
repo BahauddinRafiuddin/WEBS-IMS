@@ -19,6 +19,8 @@ const Navbar = () => {
         return "/mentor";
       case "intern":
         return "/intern";
+      case "public_user":
+        return "/public_user"
       default:
         return "/";
     }
@@ -76,7 +78,7 @@ const Navbar = () => {
                 Log in
               </Link>
               <Link
-                to="/login"
+                to="/register"
                 className="px-6 py-2.5 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 hover:shadow-lg transition-all cursor-pointer"
               >
                 Get Started

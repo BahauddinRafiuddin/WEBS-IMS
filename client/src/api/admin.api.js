@@ -1,5 +1,16 @@
 import api from "./axios"
 
+// Get pending requests (admin)
+export const getJoinRequests = async () => {
+  const res = await api.get("/join-request");
+  return res.data;
+};
+
+// Review request
+export const reviewJoinRequest = async (id, action) => {
+  const res = await api.patch(`/join-request/${id}`, { action });
+  return res.data;
+};
 
 export const getDashboardData = async () => {
   const res = await api.get("/admin/dashboard");

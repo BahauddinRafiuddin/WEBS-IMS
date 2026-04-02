@@ -1,5 +1,4 @@
 import { Route, Routes, Navigate } from "react-router-dom";
-import Login from "../pages/auth/Login";
 import { lazy, Suspense } from "react";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 import RoleRoute from "../components/common/RoleRoute";
@@ -7,20 +6,26 @@ import RoleRoute from "../components/common/RoleRoute";
 const ForceChangePassword = lazy(
   () => import("../pages/common/ForceChangePassword"),
 );
+const Login = lazy(() => import("../pages/auth/Login"));
+const Register = lazy(() => import("../pages/auth/Register"));
+
 const Landing = lazy(() => import("../pages/public/Landing"));
 
 const Interns = lazy(() => import("../pages/admin/Interns"));
 const Mentors = lazy(() => import("../pages/admin/Mentors"));
 const Programs = lazy(() => import("../pages/admin/Programs"));
 const AdminFinance = lazy(() => import("../pages/admin/AdminFinance"));
-const CompanyReviews= lazy(() => import("../pages/admin/CompanyReviews"));
+const CompanyReviews = lazy(() => import("../pages/admin/CompanyReviews"));
+const JoinRequest=lazy(()=> import("../pages/admin/JoinRequest"))
 
 const Certificate = lazy(() => import("../pages/intern/Certificate"));
 const InternPrograms = lazy(() => import("../pages/intern/InternProgram"));
 const InternTasks = lazy(() => import("../pages/intern/InternTasks"));
 const Performance = lazy(() => import("../pages/intern/Performance"));
 const InternPayments = lazy(() => import("../pages/intern/InternPayments"));
-const InternCreateReview=lazy(() => import("../pages/intern/InternCreateReview"));
+const InternCreateReview = lazy(
+  () => import("../pages/intern/InternCreateReview"),
+);
 
 const MentorPrograms = lazy(() => import("../pages/mentor/MentorPrograms"));
 const MentorTasks = lazy(() => import("../pages/mentor/MentorTasks"));
@@ -30,27 +35,49 @@ const InternPerformance = lazy(
 );
 
 const Companies = lazy(() => import("../pages/superadmin/Companies"));
-const SuperAdminFinance=lazy(()=>import('../pages/superadmin/SuperAdminFinance'))
-const PendingReviews=lazy(()=>import('../pages/superadmin/PendingReviews'))
+const SuperAdminFinance = lazy(
+  () => import("../pages/superadmin/SuperAdminFinance"),
+);
+const PendingReviews = lazy(() => import("../pages/superadmin/PendingReviews"));
 
 const Profile = lazy(() => import("../pages/common/Profile"));
 const SuperAdminLayout = lazy(() => import("../layouts/SuperAdminLayout"));
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"));
 const MentorLayout = lazy(() => import("../layouts/MentorLayout"));
 const InternLayout = lazy(() => import("../layouts/InternLayout"));
+const PublicUserLayout = lazy(() => import("../layouts/PublicUserLayout"));
 
 const SuperAdminDashboard = lazy(() => import("../pages/superadmin/Dashboard"));
 const AdminDashboard = lazy(() => import("../pages/admin/Dashboard"));
 const MentorDashboard = lazy(() => import("../pages/mentor/Dashboard"));
 const InternDashboard = lazy(() => import("../pages/intern/Dashboard"));
+const PublicUserDashboard = lazy(
+  () => import("../pages/public-user/Dashboard"),
+);
+
+const AvailableCompanies = lazy(() => import("../pages/public-user/Companies"));
+const MyRequests = lazy(() => import("../pages/public-user/MyRequests"));
 const AppRoutes = () => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route element={<ProtectedRoute />}>
-          <Route element={<RoleRoute allowedRoles={["super_admin","intern","mentor","admin"]} />}>
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={[
+                  "super_admin",
+                  "intern",
+                  "mentor",
+                  "admin",
+                  "public_user",
+                ]}
+              />
+            }
+          >
             <Route path="/change-password" element={<ForceChangePassword />} />
           </Route>
 
@@ -73,8 +100,8 @@ const AppRoutes = () => {
               <Route path="mentors" element={<Mentors />} />
               <Route path="programs" element={<Programs />} />
               <Route path="finance" element={<AdminFinance />} />
+              <Route path="requests" element={<JoinRequest/>}/>
               <Route path="reviews" element={<CompanyReviews />} />
-
             </Route>
           </Route>
 
@@ -101,7 +128,15 @@ const AppRoutes = () => {
               <Route path="certificate" element={<Certificate />} />
               <Route path="payments" element={<InternPayments />} />
               <Route path="review" element={<InternCreateReview />} />
+            </Route>
+          </Route>
 
+          {/* Public User */}
+          <Route element={<RoleRoute allowedRoles={["public_user"]} />}>
+            <Route path="/public_user" element={<PublicUserLayout />}>
+              <Route index element={<PublicUserDashboard />} />
+              <Route path="companies" element={<AvailableCompanies />} />
+              <Route path="my-requests" element={<MyRequests />} />
             </Route>
           </Route>
         </Route>

@@ -69,7 +69,7 @@ const Landing = () => {
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
-                to="/login"
+                to="/register"
                 className="group flex items-center justify-center gap-2 px-8 py-3.5 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 hover:shadow-xl hover:-translate-y-1 transition-all duration-200"
               >
                 Start for free

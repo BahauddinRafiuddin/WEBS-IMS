@@ -14,6 +14,8 @@ import superAdminRouter from './routes/superAdminRoutes.js'
 import userRouter from './routes/userRoutes.js'
 import publicChatRouter from './routes/publicChat.routes.js'
 import privateChatRouter from './routes/privateChat.routes.js'
+import joinRequestRouter from './routes/joinRequestRoutes.js'
+import publicUserRouter from './routes/publicUserRouter.js'
 
 const app = express()
 app.use(cors({
@@ -40,5 +42,7 @@ app.use('/api/private-chat',privateChatRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/performance', performanceRouter)
 app.use('/api/certificate', certificateRouter)
+app.use('/api/join-request',joinRequestRouter)
+app.use('/api/public-user',publicUserRouter)
 
 export default app;

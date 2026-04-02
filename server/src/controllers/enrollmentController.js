@@ -41,8 +41,6 @@ export const enrollIntern = async (req, res) => {
       });
     }
 
-
-
     // Create enrollment
     const enrollment = await Enrollment.create({
       intern: intern._id,

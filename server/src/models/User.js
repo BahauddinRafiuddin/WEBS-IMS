@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["super_admin", "admin", "mentor", "intern"],
+    enum: ["super_admin", "admin", "mentor", "intern","public_user"],
     default: "intern"
   },
   company: {
@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   },
   isActive: {
     type: Boolean,
-    default: false // intern inactive until admin approves
+    default: true 
   },
   forcePasswordChange: {
     type: Boolean,  

@@ -1,7 +1,7 @@
 import express from 'express'
 import { roleMiddleware } from '../middlewares/roleMiddleware.js'
 import { authMiddleware } from '../middlewares/authMiddleware.js'
-import { changeProgramStatus, createIntern, createMentor, createProgram, deleteMentorById, exportInterns, exportMentors, getAdminDashboard, getAdminFinanceOverview, getAllInterns, getAllMentors, getAllPrograms, getAvailableInterns, getCompanyReviews, updateInternStatus, updateProgram ,exportPrograms,exportFinanceReport, exportCompanyReviews} from '../controllers/adminController.js'
+import { changeProgramStatus, createIntern, createMentor, createProgram, deleteMentorById, exportInterns, exportMentors, getAdminDashboard, getAdminFinanceOverview, getAllInterns, getAllMentors, getAllPrograms, getAvailableInterns, getCompanyReviews, updateInternStatus, updateProgram ,exportPrograms,exportFinanceReport, exportCompanyReviews, getAvailableMentor} from '../controllers/adminController.js'
 
 const adminRouter = express.Router()
 
@@ -19,6 +19,7 @@ adminRouter.get('/interns', authMiddleware, roleMiddleware("admin"), getAllInter
 adminRouter.get('/intern/export', authMiddleware, roleMiddleware('admin'), exportInterns)
 adminRouter.get('/mentors', authMiddleware, roleMiddleware('admin'), getAllMentors)
 adminRouter.get('/mentors/export', authMiddleware, roleMiddleware('admin'), exportMentors)
+adminRouter.get('/availableMentors',authMiddleware,roleMiddleware("admin"),getAvailableMentor)
 
 
 adminRouter.get('/available-interns', authMiddleware, roleMiddleware('admin'), getAvailableInterns)

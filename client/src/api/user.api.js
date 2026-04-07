@@ -9,3 +9,8 @@ export const changePassword = async (data) => {
   const res = await api.put("/user/update-pass", data);
   return res.data;
 };
+
+export const getMe=async () => {
+  const res=await api.get("/user/me")
+  return res.data
+}

@@ -1,9 +1,9 @@
 import api from "./axios"
 
 // Get pending requests (admin)
-export const getJoinRequests = async () => {
-  const res = await api.get("/join-request");
-  return res.data;
+export const getJoinRequests = async (page = 1, limit = 10) => {
+  const res = await api.get(`/join-request?page=${page}&limit=${limit}`);
+  return res.data; 
 };
 
 // Review request
@@ -40,6 +40,12 @@ export const exportInternsApi = async (search, format) => {
 
 export const getAllMentors = async (page, limit, search) => {
   const res = await api.get(`/admin/mentors?page=${page}&limit=${limit}&search=${search}`)
+  return res.data
+}
+
+// get mentors to assign the programs
+export const getAvailableMentors=async () => {
+  const res=await api.get('/admin/availableMentors')
   return res.data
 }
 

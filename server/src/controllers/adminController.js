@@ -234,6 +234,23 @@ export const getAllMentors = async (req, res) => {
   }
 }
 
+// Get All Mentors To Assign Program
+export const getAvailableMentor = async (req, res) => {
+  try {
+    const filter = {
+      role: "mentor",
+      company: req.user.company,
+    }
+    const mentors = await User.find(filter).select("name email").lean()
+    res.json({
+      success: true,
+      mentors
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
 // get comapny review
 export const getCompanyReviews = async (req, res) => {
   try {

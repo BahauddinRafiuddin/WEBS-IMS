@@ -36,19 +36,45 @@ export const sendJoinRequest = async (req, res) => {
 // Admin views all pending requests for their company
 export const getJoinRequests = async (req, res) => {
   try {
-    const requests = await JoinRequest.find({
-      company: req.user.company,
-    })
-      .populate("user", "name email createdAt")
-      .populate("program", "title")
-      .sort("-createdAt");
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    res.json({ success: true, requests });
+    // Step 1: Get users already accepted anywhere
+    const acceptedUsers = await JoinRequest.find({ status: "accepted" }).distinct("user");
+
+    // Step 2: Define the query filter
+    const filter = {
+      company: req.user.company,
+      user: { $nin: acceptedUsers }
+    };
+
+    // Step 3: Fetch requests and total count in parallel
+    const [requests, totalRequests] = await Promise.all([
+      JoinRequest.find(filter)
+        .populate("user", "name email createdAt")
+        .populate("program", "title")
+        .sort("-createdAt")
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      JoinRequest.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      requests,
+      pagination: {
+        total: totalRequests,
+        pages: Math.ceil(totalRequests / limit),
+        currentPage: page
+      }
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to fetch requests" });
   }
 };
-
 // Admin accepts or rejects
 export const reviewJoinRequest = async (req, res) => {
   try {
@@ -56,6 +82,20 @@ export const reviewJoinRequest = async (req, res) => {
     const { action } = req.body; // "accepted" | "rejected"
 
     const request = await JoinRequest.findOne({ _id: id, company: req.user.company });
+
+    // Check if user already accepted in another company
+    const alreadyJoinInOtherCompany = await JoinRequest.findOne({
+      user: request.user,
+      status: "accepted",
+      company: { $ne: req.user.company }
+    });
+
+    if (alreadyJoinInOtherCompany) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already accepted in another company"
+      });
+    }
     if (!request) return res.status(404).json({ message: "Request not found" });
     if (request.status !== "pending") return res.status(400).json({ message: "Already reviewed" });
 

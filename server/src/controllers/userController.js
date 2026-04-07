@@ -105,11 +105,26 @@ export const getMyProfile = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Error Wille Creating Intern"
+      message: "Server Error Wille Fetcing User"
     })
   }
 }
 
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("_id name email role forcePasswordChange")
+    return res.json({
+      success: true,
+      message: "Profile Fetch successfully",
+      user
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error Wille Fetcing User"
+    })
+  }
+}
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;

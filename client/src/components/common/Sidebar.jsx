@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Star,
   CircleEllipsis,
+  Building2,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 
@@ -63,7 +64,7 @@ const Sidebar = ({ onClose }) => {
   const menus = {
     super_admin: [
       { name: "Dashboard", path: "/superadmin", icon: LayoutDashboard },
-      { name: "Companies", path: "/superadmin/companies", icon: Users },
+      { name: "Companies", path: "/superadmin/companies", icon: Building2 },
       {
         name: "Transaction Report",
         path: "/superadmin/report",
@@ -109,7 +110,7 @@ const Sidebar = ({ onClose }) => {
     ],
     public_user: [
       { name: "Dashboard", path: "/public_user", icon: LayoutDashboard },
-      { name: "Companies", path: "/public_user/companies", icon: Users },
+      { name: "Companies", path: "/public_user/companies", icon: Building2 },
       {
         name: "My Requests",
         path: "/public_user/my-requests",

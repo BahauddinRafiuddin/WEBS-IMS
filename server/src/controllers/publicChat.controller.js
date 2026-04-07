@@ -6,10 +6,23 @@ export const publicChatHandler = async (req, res) => {
   try {
     const { message } = req.body;
 
+    //  SIMPLE INTENT DETECTION
+    const lowerMsg = message.toLowerCase();
+
+    if (
+      lowerMsg.includes("register") ||
+      lowerMsg.includes("sign up") ||
+      lowerMsg.includes("create account")
+    ) {
+      return res.json({
+        action: "REGISTER",
+        reply: "Great! Please provide your name, email, and password to create your account."
+      });
+    }
     // fetching From cache.
     const { programs, companies } = await getCachedPublicData()
 
-    // 🔥 Build dynamic prompt
+    //  Build dynamic prompt
     const systemPrompt = buildPublicPrompt({ programs, companies });
 
     const messages = [

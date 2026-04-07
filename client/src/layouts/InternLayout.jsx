@@ -3,10 +3,15 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Topbar from "../components/common/Topbar";
 import AIChat from "../components/common/AIChat";
+import useAuth from "../hooks/useAuth";
 
 const InternLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuth();
 
+if (user?.role !== "intern") {
+  return <Navigate to="/login" replace />;
+}
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* ================= Sidebar (Desktop) ================= */}

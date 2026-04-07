@@ -21,3 +21,8 @@ export const getMyRequests = async () => {
   const res = await api.get("/join-request/my");
   return res.data;
 };
+
+export const getMyRequestStatus=async () => {
+  const res=await api.get('/public-user/status')
+  return res.data
+}

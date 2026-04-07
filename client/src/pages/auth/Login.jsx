@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import { loginUser } from "../../api/auth.api";
-import { Eye, EyeOff, X, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, X, Mail, Lock, Sparkles } from "lucide-react";
 import { toastError, toastSuccess } from "../../utils/toast";
 
 const Login = () => {
@@ -29,15 +29,12 @@ const Login = () => {
 
   const validate = () => {
     let err = {};
-
     if (!emailRegex.test(form.email)) {
-      err.email = `"${form.email}" is not a valid email address`;
+      err.email = "Please enter a valid email address";
     }
-
     if (!form.password) {
       err.password = "Password is required";
     }
-
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -58,7 +55,6 @@ const Login = () => {
       }
 
       const role = data.user?.role || data.role;
-
       if (role === "super_admin") navigate("/superadmin");
       else if (role === "admin") navigate("/admin");
       else if (role === "mentor") navigate("/mentor");
@@ -72,144 +68,134 @@ const Login = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-50 font-sans p-4 overflow-hidden">
-      {/* --- DECORATIVE BACKGROUND BLOBS (Matches Landing Page) --- */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-50 overflow-hidden font-sans">
+      {/* --- BACKGROUND DECORATION (Matches Register/Landing) --- */}
+      <div className="absolute inset-0 overflow-hidden -z-10">
+        <div className="absolute top-[-5%] left-[-5%] w-72 h-72 bg-indigo-200/40 rounded-full blur-[80px] animate-pulse"></div>
+        <div className="absolute bottom-[-5%] right-[-5%] w-72 h-72 bg-blue-200/40 rounded-full blur-[80px]"></div>
+      </div>
 
-      {/* --- FORM CONTAINER --- */}
-      <form
-        onSubmit={handleSubmit}
-        className="relative z-10 bg-white/80 backdrop-blur-xl w-full max-w-md p-8 sm:p-10 rounded-3xl shadow-2xl border border-slate-200/50"
-      >
-        {/* Close Button */}
-        <Link
-          to="/"
-          className="absolute right-5 top-5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-2 rounded-full transition-colors"
+      {/* --- LOGIN CARD --- */}
+      <div className="relative w-full max-w-md my-auto">
+        {/* Glow Effect */}
+        <div className="absolute -inset-1 bg-linear-to-r from-indigo-500 to-blue-600 rounded-4xl blur opacity-10"></div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="relative bg-white/90 backdrop-blur-xl w-full px-8 py-10 rounded-4xl border border-white shadow-2xl"
         >
-          <X size={20} />
-        </Link>
+          {/* Close Button */}
+          <Link
+            to="/"
+            className="absolute right-6 top-6 text-slate-400 hover:text-indigo-600 transition-colors p-2 hover:bg-indigo-50 rounded-full cursor-pointer"
+          >
+            <X size={18} />
+          </Link>
 
-        {/* Header */}
-        <div className="text-center mb-8 mt-2">
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Welcome <span className="inline-block animate-wave">👋</span>
-          </h2>
-          <p className="text-sm text-slate-500 mt-2">
-            Please enter your details to sign in.
-          </p>
-        </div>
-
-        {/* EMAIL INPUT */}
-        <div className="mb-5">
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Email Address
-          </label>
-          <div className="relative group">
-            <Mail
-              className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors"
-              size={20}
-            />
-            <input
-              name="email"
-              placeholder="name@company.com"
-              maxLength={50}
-              value={form.email}
-              onChange={handleChange}
-              className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400
-                ${
-                  errors.email
-                    ? "border-red-400 focus:ring-4 focus:ring-red-500/10 focus:border-red-500"
-                    : "border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 hover:border-slate-300"
-                }`}
-            />
-          </div>
-          {errors.email && (
-            <p className="text-red-500 font-medium text-xs mt-1.5 ml-1">
-              {errors.email}
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-100 mb-4">
+              <Sparkles size={24} />
+            </div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              Welcome Back
+            </h2>
+            <p className="text-slate-500 text-sm font-medium mt-1">
+              Enter your credentials to access your account
             </p>
-          )}
-        </div>
+          </div>
 
-        {/* PASSWORD INPUT */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Password
-          </label>
-          <div className="relative group">
-            <Lock
-              className="absolute left-3.5 top-3.5 text-slate-400 group-focus-within:text-indigo-600 transition-colors"
-              size={20}
-            />
-            <input
-              type={show ? "text" : "password"}
-              name="password"
-              placeholder="Enter your password"
-              value={form.password}
-              minLength={8}
-              onChange={handleChange}
-              className={`w-full pl-11 pr-12 py-3 bg-white border rounded-xl text-sm text-slate-900 outline-none transition-all placeholder:text-slate-400
-                ${
-                  errors.password
-                    ? "border-red-400 focus:ring-4 focus:ring-red-500/10 focus:border-red-500"
-                    : "border-slate-200 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 hover:border-slate-300"
-                }`}
-            />
+          <div className="space-y-5">
+            {/* EMAIL */}
+            <div className="group">
+              <label className="block text-xs font-bold text-slate-700 ml-1 mb-1.5 uppercase tracking-wider">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"
+                  size={18}
+                />
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  value={form.email}
+                  onChange={handleChange}
+                  className={`w-full pl-11 pr-4 py-3 bg-slate-50 border rounded-xl text-sm font-medium outline-none transition-all
+                    ${errors.email 
+                      ? "border-red-300 focus:ring-4 focus:ring-red-500/5 focus:border-red-500" 
+                      : "border-slate-200 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white hover:border-slate-300"
+                    }`}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-red-500 font-bold text-[10px] mt-1 ml-2">{errors.email}</p>
+              )}
+            </div>
+
+            {/* PASSWORD */}
+            <div className="group">
+              <label className="block text-xs font-bold text-slate-700 ml-1 mb-1.5 uppercase tracking-wider">
+                Password
+              </label>
+              <div className="relative">
+                <Lock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors"
+                  size={18}
+                />
+                <input
+                  type={show ? "text" : "password"}
+                  name="password"
+                  placeholder="••••••••"
+                  value={form.password}
+                  onChange={handleChange}
+                  className={`w-full pl-11 pr-12 py-3 bg-slate-50 border rounded-xl text-sm font-medium outline-none transition-all
+                    ${errors.password 
+                      ? "border-red-300 focus:ring-4 focus:ring-red-500/5 focus:border-red-500" 
+                      : "border-slate-200 focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 focus:bg-white hover:border-slate-300"
+                    }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShow(!show)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
+                >
+                  {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-red-500 font-bold text-[10px] mt-1 ml-2">{errors.password}</p>
+              )}
+            </div>
+
+            {/* SUBMIT BUTTON */}
             <button
-              type="button"
-              onClick={() => setShow(!show)}
-              className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+              disabled={loading}
+              className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-xl font-bold text-base shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all active:scale-95 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
             >
-              {show ? <EyeOff size={20} /> : <Eye size={20} />}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Authenticating...
+                </span>
+              ) : (
+                "Sign In"
+              )}
             </button>
           </div>
-          {errors.password && (
-            <p className="text-red-500 font-medium text-xs mt-1.5 ml-1">
-              {errors.password}
-            </p>
-          )}
-        </div>
 
-        {/* SUBMIT BUTTON */}
-        <button
-          disabled={loading}
-          className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-semibold shadow-md shadow-indigo-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed flex justify-center items-center cursor-pointer"
-        >
-          {loading ? (
-            <span className="flex items-center gap-2">
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Logging in...
-            </span>
-          ) : (
-            "Login"
-          )}
-        </button>
-        <p className="text-sm text-center mt-4">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-indigo-600 font-medium">
-            Register
-          </Link>
-        </p>
-      </form>
+          <p className="text-slate-500 text-center mt-8 text-sm font-medium">
+            Don’t have an account?{" "}
+            <Link to="/register" className="text-indigo-600 font-bold hover:underline underline-offset-4 cursor-pointer transition-all">
+              Create an account
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

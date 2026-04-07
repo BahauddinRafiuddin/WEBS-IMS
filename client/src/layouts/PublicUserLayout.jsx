@@ -1,18 +1,45 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Outlet, Navigate } from "react-router-dom";
-import  useAuth  from "../hooks/useAuth"
+import useAuth from "../hooks/useAuth";
 import AIChat from "../components/common/AIChat";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/common/Sidebar";
 import Topbar from "../components/common/Topbar";
+import { useNavigate } from "react-router-dom";
+import { toastSuccess } from "../utils/toast";
+import { getMe } from "../api/user.api";
 
 const PublicUserLayout = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   // If accepted and promoted to intern, redirect to intern dashboard
-  if (user?.role === "intern")
-    return <Navigate to="/intern" replace />;
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const oldRole = user?.role;
 
+        const res = await getMe(); // 👈 get fresh data
+        const newUser = res.user;
+
+        // update state
+        refreshUser();
+
+        // ✅ compare using fresh data
+        if (oldRole !== "intern" && newUser.role === "intern") {
+          toastSuccess("🎉 Congratulations! You are now an intern!");
+          navigate("/intern");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  if (user?.role === "intern") return <Navigate to="/intern" replace />;
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* ================= Sidebar (Desktop) ================= */}

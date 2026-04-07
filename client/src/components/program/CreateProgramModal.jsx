@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createProgram } from "../../api/program.api";
-import { getAllMentors } from "../../api/admin.api";
+import { getAvailableMentors } from "../../api/admin.api";
 import { toastError, toastSuccess } from "../../utils/toast";
 import { 
   X, 
@@ -46,7 +46,7 @@ const CreateProgram = ({ onClose, refresh }) => {
   useEffect(() => {
     const loadMentors = async () => {
       try {
-        const res = await getAllMentors();
+        const res = await getAvailableMentors();
         setMentors(res.mentors);
       } catch {
         toastError("Failed to load mentors");
@@ -55,6 +55,7 @@ const CreateProgram = ({ onClose, refresh }) => {
     loadMentors();
   }, []);
 
+  console.log(mentors)
   const calculateDuration = (start, end) => {
     const s = new Date(start);
     const e = new Date(end);

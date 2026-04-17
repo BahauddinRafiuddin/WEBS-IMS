@@ -18,8 +18,8 @@ const EditCommissionModal = ({ company, onClose, onSuccess }) => {
       return toastError("Commission must be greater than zero");
     }
 
-    if (commission > 100) {
-      return toastError("Commission cannot be more than 100%");
+    if (commission > 90) {
+      return toastError("Commission cannot be more than 90%");
     }
 
     try {

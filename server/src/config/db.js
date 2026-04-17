@@ -5,7 +5,7 @@ const connectDb = async (params) => {
     mongoose.connection.on("connected", () => {
       console.log("MongoDB connected successfully")
     })
-    await mongoose.connect(`${process.env.MONGODB_URL}/ims-advance`)
+    await mongoose.connect(`${process.env.MONGODB_URL}`)
   } catch (error) {
     console.log(error)
     process.exit(1)
